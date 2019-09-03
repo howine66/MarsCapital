@@ -2,6 +2,7 @@ import firebase from 'firebase/app';
 import 'firebase/firestore';
 import 'firebase/auth';
 
+
 const config = {
     apiKey: "AIzaSyDORsE-xOArRW7bICYOr-LLW5v37JGCDgo",
     authDomain: "ecommercecrwn.firebaseapp.com",
@@ -38,6 +39,39 @@ export const createUserProfileDocument = async (userAuth, additionalData) => {
 
   return userRef;
 };
+
+export const addCollectionAndDocuments = async (collectionKey,objectToAdd) =>{
+  const collectionRef = firestore.collection(collectionKey);
+  console.log(collectionRef)
+  const batch = firestore.batch();
+  objectToAdd.forEach(obj => {
+    const newDocRef = collectionRef.doc();
+    batch.set(newDocRef,obj);
+  });
+  return await batch.commit();
+}
+
+ export const convertCollectionsSnapshotToMap = (collections) => {
+  const transformedCollection = collections.docs.map (doc => {
+    const { title, items }= doc.data();
+
+    return  {
+      routeName : encodeURI(title.toLowerCase()),
+      id : doc.id,
+      title,
+      items
+    }
+  });
+
+  //下面这一步用reduce把array变成以title为property的object
+  //NB!!
+  return transformedCollection.reduce((accumulator,collection)=> {
+    accumulator[collection.title.toLowerCase()] =collection;
+    return accumulator;
+  }, {});
+}
+  
+
 
 export const auth = firebase.auth();
 export const firestore = firebase.firestore();
